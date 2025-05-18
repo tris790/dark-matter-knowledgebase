@@ -1,3 +1,4 @@
+import React from 'react';
 import { KnowledgeFragment } from "../types";
 
 export const searchFragments = (
