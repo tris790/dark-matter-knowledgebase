@@ -10,11 +10,15 @@ import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import FragmentForm from '@/components/FragmentForm';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkGfm from 'remark-gfm';
 
 const FragmentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fragments, deleteFragment } = useKnowledge();
+  const { fragments, deleteFragment, addTag, setSearchQuery } = useKnowledge();
   
   const [fragment, setFragment] = useState<KnowledgeFragment | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,6 +40,13 @@ const FragmentDetail: React.FC = () => {
     }
   };
 
+  // Handle tag click to search by tag
+  const handleTagClick = (tag: string) => {
+    setSearchQuery(""); // Clear any existing search
+    addTag(tag);
+    navigate('/');
+  };
+  
   if (!fragment) {
     return (
       <div className="container py-8 text-center">
@@ -80,15 +91,54 @@ const FragmentDetail: React.FC = () => {
             >
               {fragment.content}
             </a>
+            
+            {/* Render markdown content if it starts with html/md markers */}
+            {fragment.content.includes('<!--html-->') && (
+              <div className="mt-4 p-4 bg-secondary/30 rounded-md">
+                <div 
+                  className="prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ 
+                    __html: fragment.content
+                      .replace('<!--html-->', '')
+                      .replace('<!--/html-->', '')
+                  }} 
+                />
+              </div>
+            )}
+            
+            {fragment.content.includes('<!--md-->') && (
+              <div className="mt-4 p-4 bg-secondary/30 rounded-md">
+                <ReactMarkdown 
+                  className="prose prose-invert max-w-none"
+                  remarkPlugins={[remarkGfm]}
+                >
+                  {fragment.content
+                    .replace('<!--md-->', '')
+                    .replace('<!--/md-->', '')
+                  }
+                </ReactMarkdown>
+              </div>
+            )}
           </div>
         );
         
       case 'code':
+        // Extract language from code block if specified
+        const codeContent = fragment.content.replace(/```[a-z]*\n|```/g, '');
+        const langMatch = fragment.content.match(/```([a-z]*)\n/);
+        const language = langMatch ? langMatch[1] : 'javascript';
+        
         return (
           <div className="mb-4">
-            <pre className="bg-secondary/50 p-4 rounded-md overflow-x-auto font-mono text-sm whitespace-pre-wrap">
-              {fragment.content.replace(/```[a-z]*\n|```/g, '')}
-            </pre>
+            <SyntaxHighlighter 
+              language={language} 
+              style={vscDarkPlus}
+              className="rounded-md"
+              wrapLines={true}
+              showLineNumbers={true}
+            >
+              {codeContent}
+            </SyntaxHighlighter>
           </div>
         );
         
@@ -128,10 +178,12 @@ const FragmentDetail: React.FC = () => {
         );
         
       default:
-        // Text content
+        // Text content with markdown support
         return (
           <div className="prose prose-invert max-w-none">
-            <p className="whitespace-pre-wrap">{fragment.content}</p>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {fragment.content}
+            </ReactMarkdown>
           </div>
         );
     }
@@ -181,7 +233,14 @@ const FragmentDetail: React.FC = () => {
           <h1 className="text-3xl font-bold mb-2">{fragment.title}</h1>
           <div className="flex gap-2 mb-4 flex-wrap">
             {fragment.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">{tag}</Badge>
+              <Badge 
+                key={tag} 
+                variant="secondary" 
+                className="cursor-pointer hover:bg-primary/20"
+                onClick={() => handleTagClick(tag)}
+              >
+                {tag}
+              </Badge>
             ))}
           </div>
           

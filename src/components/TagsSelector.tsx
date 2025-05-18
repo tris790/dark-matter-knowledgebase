@@ -21,7 +21,7 @@ const TagsSelector: React.FC<TagsSelectorProps> = ({
   className = "",
   showCreateNew = true,
 }) => {
-  const { allTags, selectedTags: contextSelectedTags, addTag, removeTag, clearTags } = useKnowledge();
+  const { allTags, selectedTags: contextSelectedTags, addTag, removeTag, clearTags, setSearchQuery } = useKnowledge();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   
@@ -77,6 +77,14 @@ const TagsSelector: React.FC<TagsSelectorProps> = ({
       }
       setOpen(false);
       setInputValue("");
+    }
+  };
+
+  // Function to handle clicking on a tag to search by it
+  const handleTagClick = (tag: string) => {
+    setSearchQuery("");  // Clear any existing search
+    if (!selectedTags.includes(tag)) {
+      addTag(tag);
     }
   };
 

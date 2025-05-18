@@ -3,9 +3,11 @@ import React from "react";
 import { KnowledgeFragment } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { truncateText } from "@/utils/searchUtils";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useKnowledge } from "@/context/KnowledgeContext";
+import { truncateText } from "@/utils/searchUtils";
+import { highlightText } from "@/utils/searchUtils";
 
 interface FragmentCardProps {
   fragment: KnowledgeFragment;
@@ -15,6 +17,14 @@ interface FragmentCardProps {
 
 const FragmentCard: React.FC<FragmentCardProps> = ({ fragment, highlight = "", className = "" }) => {
   const { id, title, content, type, tags } = fragment;
+  const { addTag, setSearchQuery } = useKnowledge();
+  
+  // Handle tag click
+  const handleTagClick = (e: React.MouseEvent, tag: string) => {
+    e.preventDefault(); // Prevent navigation to fragment detail
+    setSearchQuery(""); // Clear any existing search
+    addTag(tag);
+  };
   
   // Different rendering based on fragment type
   const renderContent = () => {
@@ -65,7 +75,7 @@ const FragmentCard: React.FC<FragmentCardProps> = ({ fragment, highlight = "", c
         />
         <CardContent className="p-4 pl-5">
           <h3 className="font-medium text-lg mb-2 group-hover:text-primary transition-colors">
-            {title}
+            {highlight ? highlightText(title, highlight) : title}
           </h3>
           <div className="mb-3">
             {renderContent()}
@@ -75,7 +85,8 @@ const FragmentCard: React.FC<FragmentCardProps> = ({ fragment, highlight = "", c
               <Badge 
                 key={tag} 
                 variant="secondary"
-                className="text-xs"
+                className="text-xs cursor-pointer hover:bg-primary/20"
+                onClick={(e) => handleTagClick(e, tag)}
               >
                 {tag}
               </Badge>

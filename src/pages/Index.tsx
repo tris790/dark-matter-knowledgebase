@@ -46,19 +46,16 @@ const Index: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         {/* Hero section with search */}
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
+        <section className="w-full py-8 md:py-16 lg:py-20 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2 max-w-3xl">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
                   <span className="text-primary">Personal Knowledge</span> Database
                 </h1>
-                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Your centralized repository for everything you know and want to remember.
-                </p>
               </div>
               <div className="w-full max-w-2xl mx-auto">
-                <SearchBar autoFocus={true} className="mt-6" />
+                <SearchBar autoFocus={true} className="mt-4" />
                 <div className="mt-4">
                   <TagsSelector />
                 </div>
